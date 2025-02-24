@@ -1,0 +1,47 @@
+name: Rekaz Coupon Fetaure Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Cypress Tests
+        run: npx cypress run
+
+      - name: Generate Allure Report
+        run: npx allure generate allure-results --clean --output allure-report
+
+      - name: Upload Allure Results as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-report
+          path: allure-report
+          retention-days: 7
+
+  deploy-allure-report:
+    needs: cypress-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Allure Report
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
